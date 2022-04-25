@@ -10,16 +10,19 @@
   <body>
   <script>
     $(document).ready(function(){
-
-      $('input').change(function() {
-        if ($(this).val() == "") {
-          $(this).val($(this).attr('min'))
+      searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.has('shareId')) {
+        let shareId = searchParams.get('shareId');
+        if (shareId) {
+          setValues();
         }
+      }
 
-        calculate();
-      });
+      function baseUrl() {
+        return window.location.href.split('?')[0];
+      };
 
-      function calculate() {
+      function populate() {
         var primer, brass, bullet, powder;
 
         primer = Math.max($('#primerPrice').val(), 0) / Math.max($('#primerAmount').val(), 1);
@@ -30,9 +33,53 @@
         
         roundPrice = primer + brass + bullet + powder;
         $('#pricePerRound').val(roundPrice.toFixed(2));
+
+        shareId = JSON.stringify([
+          $('#powderAmount').val(),
+          $('#powderPrice').val(),
+          $('#primerAmount').val(),
+          $('#primerPrice').val(),
+          $('#brassAmount').val(),
+          $('#brassPrice').val(),
+          $('#bulletAmount').val(),
+          $('#bulletPrice').val(),
+          $('#chargeWeight').val()
+        ]);
+        $('#shareUrl').val(baseUrl() + '?shareId=' + btoa(shareId));
       };
 
-      calculate();
+      $('input').change(function() {
+        if ($(this).val() == "") {
+          $(this).val($(this).attr('min'))
+        }
+
+        populate();
+      });
+
+      $('#copyButton').click(function() {
+        navigator.clipboard.writeText($('#shareUrl').val());
+      });
+
+      function setValues() {
+        try {
+          values = JSON.parse(atob(searchParams.get('shareId')));
+        } catch(e) {
+          console.warn("Invalid ShareId");
+          return;
+        }
+
+        $('#powderAmount').val(values.shift());
+        $('#powderPrice').val(values.shift());
+        $('#primerAmount').val(values.shift());
+        $('#primerPrice').val(values.shift());
+        $('#brassAmount').val(values.shift());
+        $('#brassPrice').val(values.shift());
+        $('#bulletAmount').val(values.shift());
+        $('#bulletPrice').val(values.shift());
+        $('#chargeWeight').val(values.shift());
+      };
+
+      populate();
     });
  </script>
 
@@ -45,7 +92,6 @@
         </p>
       </div>
     </div>
-
     
     <div class="row">
       <div class="col">
@@ -95,9 +141,21 @@
             <input disabled type="number" id="pricePerRound" value="" class="form-control">
           </div>
         </div>
+
+        <hr />
+
+        <div class="row">
+          <div class="input-group mb-3">
+            <span class="input-group-text">Share this load</span>
+            <input disabled class="form-control" type="text" id="shareUrl">
+            <button class="btn btn-outline-secondary" type="button" id="copyButton">
+              Copy
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
-
   </div>
 </body>
 </html>
