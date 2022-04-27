@@ -29,7 +29,16 @@
         brass = Math.max($('#brassPrice').val(), 0) / Math.max($('#brassAmount').val(), 1);
         bullet = Math.max($('#bulletPrice').val(), 0) / Math.max($('#bulletAmount').val(), 1);
 
-        powder = Math.max($('#powderPrice').val(), 0) / $('#powderAmount').val() * $('#chargeWeight').val() / 7000
+        switch($('input#unitRadios:checked').val()) {
+        case "1":
+          // Imperial
+          powder = Math.max($('#powderPrice').val(), 0) / $('#powderAmount').val() * $('#chargeWeight').val() / 7000
+          break;
+        case "2":
+          // Metric
+          powder = Math.max($('#powderPrice').val(), 0) / $('#powderAmount').val() * $('#chargeWeight').val() / 1000
+          break;
+        }
         
         roundPrice = primer + brass + bullet + powder;
         $('#pricePerRound').val(roundPrice.toFixed(2));
@@ -43,7 +52,8 @@
           $('#brassPrice').val(),
           $('#bulletAmount').val(),
           $('#bulletPrice').val(),
-          $('#chargeWeight').val()
+          $('#chargeWeight').val(),
+          $('input#unitRadios:checked').val()
         ]);
         $('#shareUrl').val(baseUrl() + '?shareId=' + btoa(shareId));
       };
@@ -55,6 +65,26 @@
 
         populate();
       });
+
+      $('input#unitRadios').change(function() {
+        changeUnits();
+        populate();
+      });
+
+      function changeUnits() {
+        switch($('input#unitRadios:checked').val()) {
+        case "1":
+          // Imperial
+          $('span#unitsPowder').text("lb(s)")
+          $('span#unitsLoad').text("grains")
+          break;
+        case "2":
+          // Metric
+          $('span#unitsPowder').text("kg(s)")
+          $('span#unitsLoad').text("grams")
+          break;
+        }
+      };
 
       $('#copyButton').click(function() {
         navigator.clipboard.writeText($('#shareUrl').val());
@@ -77,6 +107,9 @@
         $('#bulletAmount').val(values.shift());
         $('#bulletPrice').val(values.shift());
         $('#chargeWeight').val(values.shift());
+
+        $('input#unitRadios').val([values.shift()]);
+        changeUnits();
       };
 
       populate();
@@ -92,14 +125,15 @@
         </p>
       </div>
     </div>
-    
+
     <div class="row">
       <div class="col">
         <h2>Components</h2>
 
         <div class="input-group mb-3">
           <input class="form-control" type="number" step="0.1" id="powderAmount" value="1" min="0.01">
-          <span class="input-group-text">lb(s) of powder for $</span>
+          <span class="input-group-text" id="unitsPowder">lb(s)</span>
+          <span class="input-group-text"> of powder for $</span>
           <input type="number" step="0.01" id="powderPrice" value="50.00" min="0.00" class="form-control">
         </div>
 
@@ -129,7 +163,7 @@
 
       <div class="input-group mb-3">
         <input type="number" step="0.01" id="chargeWeight" value="5.00" min="0.01" class="form-control">
-        <span class="input-group-text">grains</span>
+        <span class="input-group-text" id="unitsLoad">grains</span>
       </div>
     </div>
 
@@ -151,6 +185,31 @@
           </button>
         </div>
       </div>
+    </div>
+
+    <div class="row">
+      <h4>Options</h4>
+
+      <fieldset class="form-group">
+        <div class="row">
+          <legend class="col-form-label col-sm-2 pt-0">Units:</legend>
+          <div class="col-sm-10">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="unitRadios" id="unitRadios" value="1" checked>
+              <label class="form-check-label" for="gridRadios1">
+                Imperial (lbs / grains)
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="unitRadios" id="unitRadios" value="2">
+              <label class="form-check-label" for="gridRadios2">
+                Metric (kgs / grams)
+              </label>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
     </div>
 
   </div>
